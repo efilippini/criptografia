@@ -15,34 +15,6 @@ import itertools # Utilizado neste codigo para iterar de forma ciclica em caract
 import string # Utilizado neste codigo para validacao entre maiusculas e minusculas.
 import textwrap # Utilizado neste codigo para formatacao e impressao de texto.
 
-# A funcao 'vigenere_kasiski' trabalha na resolucao de uma cifra de Vigenere encontrando chaves de modo que o texto simples se assemelhe ao ingles normal, utilizando o metodo Kasiski.
-# Esta funcao utiliza como auxiliares as funcoes 'vigenere_compare_freq' e 'vigenere_decrypt'.
-# A funcao esta configurada para apresentar apenas a melhor chave encontrada nos testes de tamanho de chave efetuados, mas podera apresentar mais chaves se necessario ([:1]).
-
-def vigenere_kasiski(text, key_min_size=None, key_max_size=None, a_is_zero=True):
-    best_keys = [] # lista que recebera as melhores chaves encontradas.
-    key_min_size = key_min_size or 1 # Tamanho minimo de chave para busca.
-    key_max_size = key_max_size or 20 # Tamanho maximo de chave para busca.
-
-    text_letters = [c for c in text.lower() if c in string.ascii_lowercase] # Lista com as letras em minusculo do texto criptografado.
-
-    for key_length in range(key_min_size, key_max_size):
-# Testa todos os possiveis tamanhos de chave entre o minimo e maximo configurados.
-# Para cada tamanho de chave, a funcao testa todas as chaves possiveis, calculando o deslocamente para cada letra do texto usando a funcao 'vigenere_compare_freq' e a funcao 'vigenere_decrypt' com todas as letras do alfabeto.
-# A chave com menor valor de 'vigenere_compare_freq' sera a escolhida como a chave mais provavel.
-        key = [None] * key_length
-        for key_index in range(key_length):
-            letters = "".join(itertools.islice(text_letters, key_index, None, key_length))
-            shifts = []
-            for key_char in string.ascii_lowercase:
-                shifts.append(
-                    (vigenere_compare_freq(vigenere_decrypt(letters, key_char, a_is_zero)), key_char)
-                )
-            key[key_index] = min(shifts, key=lambda x: x[0])[1]
-        best_keys.append("".join(key))
-    best_keys.sort(key=lambda key: vigenere_compare_freq(vigenere_decrypt(text, key, a_is_zero)))
-    return best_keys[:1]
-
 # A funcao 'vigenere_logic' implementa a logica da cifra de Vigenere, recebe o texto puro a ser cifrado, a chave que devera ser utilizada na cifragem, alem de um booleano de indexacao.
 # Esta funcao e utilizada como auxiliar no processo de decifragem na funcao 'vigenere_decrypt'.
 # Neste codigo, utilizaremos esta funcao como auxiliar no processo de decifragem, implementado na funcao 'vigenere_decrypt'.
@@ -81,6 +53,34 @@ def vigenere_compare_freq(text):
     for l in text:
         freq[ord(l) - ord('a')] += 1
     return sum(abs(f / total - E) for f, E in zip(freq, ENGLISH_FREQ))
+
+# A funcao 'vigenere_kasiski' trabalha na resolucao de uma cifra de Vigenere encontrando chaves de modo que o texto simples se assemelhe ao ingles normal, utilizando o metodo Kasiski.
+# Esta funcao utiliza como auxiliares as funcoes 'vigenere_compare_freq' e 'vigenere_decrypt'.
+# A funcao esta configurada para apresentar apenas a melhor chave encontrada nos testes de tamanho de chave efetuados, mas podera apresentar mais chaves se necessario ([:1]).
+
+def vigenere_kasiski(text, key_min_size=None, key_max_size=None, a_is_zero=True):
+    best_keys = [] # lista que recebera as melhores chaves encontradas.
+    key_min_size = key_min_size or 1 # Tamanho minimo de chave para busca.
+    key_max_size = key_max_size or 20 # Tamanho maximo de chave para busca.
+
+    text_letters = [c for c in text.lower() if c in string.ascii_lowercase] # Lista com as letras em minusculo do texto criptografado.
+
+    for key_length in range(key_min_size, key_max_size):
+# Testa todos os possiveis tamanhos de chave entre o minimo e maximo configurados.
+# Para cada tamanho de chave, a funcao testa todas as chaves possiveis, calculando o deslocamente para cada letra do texto usando a funcao 'vigenere_compare_freq' e a funcao 'vigenere_decrypt' com todas as letras do alfabeto.
+# A chave com menor valor de 'vigenere_compare_freq' sera a escolhida como a chave mais provavel.
+        key = [None] * key_length
+        for key_index in range(key_length):
+            letters = "".join(itertools.islice(text_letters, key_index, None, key_length))
+            shifts = []
+            for key_char in string.ascii_lowercase:
+                shifts.append(
+                    (vigenere_compare_freq(vigenere_decrypt(letters, key_char, a_is_zero)), key_char)
+                )
+            key[key_index] = min(shifts, key=lambda x: x[0])[1]
+        best_keys.append("".join(key))
+    best_keys.sort(key=lambda key: vigenere_compare_freq(vigenere_decrypt(text, key, a_is_zero)))
+    return best_keys[:1]
 
 # Imprime na tela a(s) melhor(es) chave(s) junto ao texto decifrado.
 
